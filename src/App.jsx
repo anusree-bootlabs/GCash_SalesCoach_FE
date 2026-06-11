@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useState, useEffect } from "react"
 import { Check } from "lucide-react"
 
@@ -167,14 +168,20 @@ export default function App() {
 =======
 import { useState } from "react";
 import Layout from "./Layout";
+=======
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import AppRoutes from "./routeConfig";
+>>>>>>> febbb62 (adding login features)
 
 function App() {
-    const [language, setLanguage] = useState("en");
-
     return (
-        <Layout language={language} setLanguage={setLanguage}>
-            <div>Your page content here</div>
-        </Layout>
+        <AuthProvider>
+            <BrowserRouter>
+                <AppRoutes />
+            </BrowserRouter>
+        </AuthProvider>
     );
 }
 

@@ -1,4 +1,4 @@
-import translations from "../../src/i18n/translation.js"
+import { translations } from "./translation.js";
 
 export const useLanguage = (lang = "en") => {
     const t = (key) => {

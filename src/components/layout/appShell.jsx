@@ -20,10 +20,17 @@ import {
     useTheme,
     useMediaQuery,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+<<<<<<< HEAD
 import MenuIcon from "@mui/icons-material/Menu";
 // import useLanguage from "../../i18n/useLanguage.js";
 
+=======
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../i18n/useLanguage.js";
+>>>>>>> febbb62 (adding login features)
 
 const drawerWidth = 240;
 
@@ -52,7 +59,7 @@ const Logo = () => (
                     lineHeight: 1.1,
                 }}
             >
-                AI
+                GCash Coach
             </Typography>
 
             <Typography
@@ -63,12 +70,13 @@ const Logo = () => (
                     letterSpacing: 0.5,
                 }}
             >
-                GOVERNANCE & SECURITY
+                SALES & PERFORMANCE
             </Typography>
         </Box>
     </Box>
 );
 
+<<<<<<< HEAD
 export default function AppShell({ 
     children, 
     sidebarItems = [], 
@@ -86,6 +94,47 @@ export default function AppShell({
     const selectedItem = controlledSelectedItem !== undefined ? controlledSelectedItem : localSelectedItem;
     const setSelectedItem = controlledSetSelectedItem !== undefined ? controlledSetSelectedItem : setLocalSelectedItem;
     // const { t } = useLanguage(language);
+=======
+export default function AppShell({
+    children,
+    sidebarItems = [],
+    breadcrumbs = [],
+    language = "en",
+    setLanguage,
+    selectedItem,
+    onSelectItem
+}) {
+    const { role, user, setRole, logout } = useAuth();
+    const navigate = useNavigate();
+    const { t } = useLanguage(language);
+    const [internalSelected, setInternalSelected] = useState(sidebarItems?.[0]?.id);
+
+    const activeItem = selectedItem !== undefined ? selectedItem : internalSelected;
+    
+    const handleSelect = (id) => {
+        if (onSelectItem) {
+            onSelectItem(id);
+        } else {
+            setInternalSelected(id);
+        }
+    };
+
+    const handleRoleChange = (newRole) => {
+        setRole(newRole);
+        if (newRole === "manager") {
+            navigate("/manager/dashboard");
+        } else if (newRole === "admin") {
+            navigate("/admin/dashboard");
+        } else {
+            navigate("/dashboard");
+        }
+    };
+
+    const handleLogout = () => {
+        logout();
+        navigate("/");
+    };
+>>>>>>> febbb62 (adding login features)
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -194,11 +243,80 @@ export default function AppShell({
                     },
                 }}
             >
+<<<<<<< HEAD
                 {drawerContent}
             </Drawer>
 
             {/* Main Area */}
             <Box sx={{ flexGrow: 1, width: "100%", overflowX: "hidden" }}>
+=======
+                <Box sx={{ p: 3 }}>
+                    <Logo />
+                </Box>
+
+                <List sx={{ px: 2 }}>
+                    {sidebarItems.map((item) => (
+                        <ListItemButton
+                            key={item.id}
+                            selected={activeItem === item.id}
+                            onClick={() => handleSelect(item.id)}
+                            sx={{
+                                mb: 1,
+                                borderRadius: 2,
+                                minHeight: 48,
+
+                                "&.Mui-selected": {
+                                    bgcolor: "#1a237e",
+                                    color: "#fff",
+                                },
+
+                                "&.Mui-selected .MuiListItemIcon-root": {
+                                    color: "#fff",
+                                },
+                            }}
+                        >
+                            <ListItemIcon
+                                sx={{
+                                    minWidth: 36,
+                                    color:
+                                        activeItem === item.id
+                                            ? "#fff"
+                                            : "text.secondary",
+                                }}
+                            >
+                                {item.icon}
+                            </ListItemIcon>
+
+                            <ListItemText primary={item.label} />
+                        </ListItemButton>
+                    ))}
+                </List>
+
+                <Box sx={{ flexGrow: 1 }} />
+
+                <Divider />
+
+                <List sx={{ p: 2 }}>
+                    <ListItemButton sx={{ borderRadius: 2 }}>
+                        <ListItemText primary={t("settings")} />
+                    </ListItemButton>
+
+                    <ListItemButton sx={{ borderRadius: 2 }}>
+                        <ListItemText primary={t("support")} />
+                    </ListItemButton>
+
+                    <ListItemButton onClick={handleLogout} sx={{ borderRadius: 2, color: "#ba1a1a" }}>
+                        <ListItemIcon sx={{ minWidth: 36, color: "#ba1a1a" }}>
+                            <ExitToAppIcon />
+                        </ListItemIcon>
+                        <ListItemText primary={t("logout")} />
+                    </ListItemButton>
+                </List>
+            </Drawer>
+
+            {/* Main Area */}
+            <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+>>>>>>> febbb62 (adding login features)
                 <AppBar
                     position="static"
                     elevation={0}
@@ -254,7 +372,7 @@ export default function AppShell({
                             </Box>
                         </Box>
 
-                        {/* Right Side */}
+                        {/* Right Side Controls */}
                         <Box
                             sx={{
                                 display: "flex",
@@ -262,17 +380,49 @@ export default function AppShell({
                                 gap: { xs: 1, sm: 2 },
                             }}
                         >
+<<<<<<< HEAD
                             <IconButton size="small">
                                 <NotificationsNoneOutlinedIcon />
                             </IconButton>
+=======
+                            {/* Role Switcher Selector */}
+                            <FormControl size="small" sx={{ minWidth: 140 }}>
+                                <Select
+                                    value={role}
+                                    onChange={(e) => handleRoleChange(e.target.value)}
+                                    sx={{
+                                        height: 38,
+                                        bgcolor: "#f1f5f9",
+                                        borderRadius: 2,
+                                        fontWeight: 600,
+                                        fontSize: 13,
+                                        "& .MuiOutlinedInput-notchedOutline": {
+                                            border: "none"
+                                        }
+                                    }}
+                                >
+                                    <MenuItem value="dsp">DSP Agent</MenuItem>
+                                    <MenuItem value="manager">Manager</MenuItem>
+                                    <MenuItem value="admin">Administrator</MenuItem>
+                                </Select>
+                            </FormControl>
+>>>>>>> febbb62 (adding login features)
 
+                            {/* Language Selector */}
                             <FormControl size="small">
                                 <Select
                                     value={language}
                                     onChange={(e) => setLanguage(e.target.value)}
                                     sx={{
+<<<<<<< HEAD
                                         minWidth: { xs: 80, sm: 120 },
                                         fontSize: "12px",
+=======
+                                        minWidth: 100,
+                                        height: 38,
+                                        borderRadius: 2,
+                                        fontSize: 13
+>>>>>>> febbb62 (adding login features)
                                     }}
                                 >
                                     <MenuItem value="en">English</MenuItem>
@@ -280,10 +430,15 @@ export default function AppShell({
                                 </Select>
                             </FormControl>
 
+                            <IconButton sx={{ bgcolor: "#f8fafc", p: 1 }}>
+                                <NotificationsNoneOutlinedIcon />
+                            </IconButton>
+
                             {/* Vertical Divider */}
                             <Divider
                                 orientation="vertical"
                                 flexItem
+<<<<<<< HEAD
                                 sx={{ height: 24, alignSelf: "center", display: { xs: "none", sm: "block" } }}
                             />
 
@@ -291,11 +446,36 @@ export default function AppShell({
                                 src="https://i.pravatar.cc/100"
                                 sx={{ width: 32, height: 32 }}
                             />
+=======
+                                sx={{ height: 30, my: "auto" }}
+                            />
+
+                            {/* User details & Avatar */}
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                                <Box sx={{ display: { xs: "none", md: "block" }, textAlign: "right" }}>
+                                    <Typography variant="body2" sx={{ fontWeight: 700, color: "text.primary", lineHeight: 1.1 }}>
+                                        {user?.name}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: "text.secondary", fontSize: 10 }}>
+                                        {user?.roleName}
+                                    </Typography>
+                                </Box>
+                                <Avatar
+                                    src={user?.avatar}
+                                    sx={{ width: 38, height: 38, border: "2px solid #e5e7eb" }}
+                                />
+                            </Box>
+>>>>>>> febbb62 (adding login features)
                         </Box>
                     </Toolbar>
                 </AppBar>
 
+<<<<<<< HEAD
                 <Box sx={{ p: { xs: 2, md: 3 } }}>{children}</Box>
+=======
+                {/* Subpage Content */}
+                <Box sx={{ p: 3, flexGrow: 1 }}>{children}</Box>
+>>>>>>> febbb62 (adding login features)
             </Box>
         </Box>
     );

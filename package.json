@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.13.0",
+    "@azure/msal-react": "^5.4.4",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.1.0",
@@ -24,8 +26,13 @@
     "i18next": "^26.3.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+<<<<<<< HEAD
     "react-i18next": "^17.0.8"
 >>>>>>> 36a3656 (layout fix)
+=======
+    "react-i18next": "^17.0.8",
+    "react-router-dom": "^6.23.1"
+>>>>>>> febbb62 (adding login features)
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
