@@ -37,80 +37,50 @@ const USER_PROFILES = {
     }
 };
 
-// Helper: base64 encoding (matching JWT output)
-const base64Encode = (obj) => {
-    try {
-        const json = JSON.stringify(obj);
-        return btoa(unescape(encodeURIComponent(json)));
-    } catch (e) {
-        return "";
-    }
-};
-
-// Helper: base64 decoding (decodes JWT payload)
-const decodeJWT = (token) => {
-    try {
-        const parts = token.split(".");
-        if (parts.length !== 3) return null;
-        const payloadBase64 = parts[1];
-        const json = decodeURIComponent(escape(atob(payloadBase64)));
-        return JSON.parse(json);
-    } catch (e) {
-        console.error("JWT decoding failed:", e);
-        return null;
-    }
-};
-
-// Helper: mock JWT signature generator
-const generateMockJWT = (payload) => {
-    const header = { alg: "HS256", typ: "JWT" };
-    const encodedHeader = base64Encode(header);
-    const encodedPayload = base64Encode(payload);
-    const signature = "mock_signature_hash_value_123456789";
-    return `${encodedHeader}.${encodedPayload}.${signature}`;
-};
-
 export const AuthProvider = ({ children }) => {
-    const [token, setToken] = useState(() => {
-        return localStorage.getItem("gcash_salescoach_token") || null;
+    const [username, setUsername] = useState(() => {
+        return localStorage.getItem("gcash_salescoach_username") || "";
     });
-
+    const [password, setPassword] = useState(() => {
+        return localStorage.getItem("gcash_salescoach_password") || "";
+    });
     const [role, setRoleState] = useState("guest");
     const [user, setUser] = useState(null);
     const [permissions, setPermissions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [language, setLanguage] = useState("en");
 
-    // Initial Token Sync & Load
+    // Sync state with localStorage on mount and when login state changes
     useEffect(() => {
-        if (token) {
-            const claims = decodeJWT(token);
-            if (claims && claims.exp * 1000 > Date.now()) {
-                setRoleState(claims.role);
-                setUser({
-                    name: claims.name,
-                    email: claims.email,
-                    roleName: USER_PROFILES[claims.role]?.roleName || claims.role,
-                    avatar: claims.avatar
-                });
-                setPermissions(ROLE_PERMISSIONS[claims.role] || []);
-            } else {
-                // Token expired
-                logout();
-            }
+        const storedUsername = localStorage.getItem("gcash_salescoach_username");
+        const storedRole = localStorage.getItem("gcash_salescoach_role") || "guest";
+        
+        if (storedUsername && storedRole !== "guest") {
+            setUsername(storedUsername);
+            setRoleState(storedRole);
+            const profile = USER_PROFILES[storedRole];
+            setUser({
+                name: profile?.name || storedUsername,
+                email: storedUsername,
+                roleName: profile?.roleName || storedRole,
+                avatar: profile?.avatar || ""
+            });
+            setPermissions(ROLE_PERMISSIONS[storedRole] || []);
         } else {
+            setUsername("");
+            setPassword("");
             setRoleState("guest");
             setUser(null);
             setPermissions([]);
         }
         setLoading(false);
-    }, [token]);
+    }, [username]);
 
-    const login = async (email, password, selectedRole) => {
+    const login = async (email, passwordVal, selectedRole) => {
         // Simulate backend api response delay
         await new Promise((resolve) => setTimeout(resolve, 800));
 
-        if (!email || !password) {
+        if (!email || !passwordVal) {
             throw new Error("Credentials cannot be blank");
         }
 
@@ -119,25 +89,37 @@ export const AuthProvider = ({ children }) => {
             throw new Error("Invalid selection role");
         }
 
-        const claims = {
-            sub: selectedRole === "admin" ? "admin_1" : selectedRole === "manager" ? "manager_2" : "dsp_3",
+        // Store credentials in localStorage
+        localStorage.setItem("gcash_salescoach_username", email);
+        localStorage.setItem("gcash_salescoach_password", passwordVal);
+        localStorage.setItem("gcash_salescoach_role", selectedRole);
+
+        setUsername(email);
+        setPassword(passwordVal);
+        setRoleState(selectedRole);
+        setUser({
+            name: profile.name,
+            email: email,
+            roleName: profile.roleName,
+            avatar: profile.avatar
+        });
+        setPermissions(ROLE_PERMISSIONS[selectedRole] || []);
+
+        return {
             email: email,
             role: selectedRole,
             name: profile.name,
-            avatar: profile.avatar,
-            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24 Hours
+            avatar: profile.avatar
         };
-
-        const generatedToken = generateMockJWT(claims);
-        localStorage.setItem("gcash_salescoach_token", generatedToken);
-        setToken(generatedToken);
-        
-        return claims;
     };
 
     const logout = () => {
-        localStorage.removeItem("gcash_salescoach_token");
-        setToken(null);
+        localStorage.removeItem("gcash_salescoach_username");
+        localStorage.removeItem("gcash_salescoach_password");
+        localStorage.removeItem("gcash_salescoach_role");
+
+        setUsername("");
+        setPassword("");
         setRoleState("guest");
         setUser(null);
         setPermissions([]);
@@ -148,8 +130,10 @@ export const AuthProvider = ({ children }) => {
         return permissions.includes(permission);
     };
 
+    const token = username || null;
+
     return (
-        <AuthContext.Provider value={{ token, role, user, permissions, login, logout, hasPermission, loading, language, setLanguage }}>
+        <AuthContext.Provider value={{ token, username, password, role, user, permissions, login, logout, hasPermission, loading, language, setLanguage }}>
             {children}
         </AuthContext.Provider>
     );
