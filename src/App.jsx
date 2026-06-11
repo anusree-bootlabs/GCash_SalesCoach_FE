@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react"
 import { Check } from "lucide-react"
 
@@ -163,3 +164,19 @@ export default function App() {
     </div>
   )
 }
+=======
+import { useState } from "react";
+import Layout from "./Layout";
+
+function App() {
+    const [language, setLanguage] = useState("en");
+
+    return (
+        <Layout language={language} setLanguage={setLanguage}>
+            <div>Your page content here</div>
+        </Layout>
+    );
+}
+
+export default App;
+>>>>>>> 36a3656 (layout fix)
