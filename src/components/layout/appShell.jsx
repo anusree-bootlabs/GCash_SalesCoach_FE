@@ -17,8 +17,11 @@ import {
     Toolbar,
     Typography,
     IconButton,
+    useTheme,
+    useMediaQuery,
 } from "@mui/material";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import MenuIcon from "@mui/icons-material/Menu";
 // import useLanguage from "../../i18n/useLanguage.js";
 
 
@@ -66,16 +69,121 @@ const Logo = () => (
     </Box>
 );
 
-export default function AppShell({ children,   sidebarItems = [], breadcrumbs = [], language, setLanguage,}) {
-    const [selectedItem, setSelectedItem] = useState(sidebarItems?.[0]?.id);
+export default function AppShell({ 
+    children, 
+    sidebarItems = [], 
+    breadcrumbs = [], 
+    language, 
+    setLanguage,
+    selectedItem: controlledSelectedItem,
+    setSelectedItem: controlledSetSelectedItem
+}) {
+    const [localSelectedItem, setLocalSelectedItem] = useState(sidebarItems?.[0]?.id);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    const [mobileOpen, setMobileOpen] = useState(false);
+    
+    const selectedItem = controlledSelectedItem !== undefined ? controlledSelectedItem : localSelectedItem;
+    const setSelectedItem = controlledSetSelectedItem !== undefined ? controlledSetSelectedItem : setLocalSelectedItem;
     // const { t } = useLanguage(language);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
+
+    const drawerContent = (
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+            <Box sx={{ p: 3 }}>
+                <Logo />
+            </Box>
+
+            <List sx={{ px: 2 }}>
+                {sidebarItems.map((item) => (
+                    <ListItemButton
+                        key={item.id}
+                        selected={selectedItem === item.id}
+                        onClick={() => {
+                            setSelectedItem(item.id);
+                            if (isMobile) {
+                                setMobileOpen(false);
+                            }
+                        }}
+                        sx={{
+                            mb: 1,
+                            borderRadius: 2,
+                            minHeight: 48,
+
+                            "&.Mui-selected": {
+                                bgcolor: "#1a237e",
+                                color: "#fff",
+                            },
+
+                            "&.Mui-selected .MuiListItemIcon-root": {
+                                color: "#fff",
+                            },
+                        }}
+                    >
+                        <ListItemIcon
+                            sx={{
+                                minWidth: 36,
+                                color:
+                                    selectedItem === item.id
+                                        ? "#fff"
+                                        : "text.secondary",
+                            }}
+                        >
+                            {item.icon}
+                        </ListItemIcon>
+
+                        <ListItemText primary={item.label} />
+                    </ListItemButton>
+                ))}
+            </List>
+
+            <Box sx={{ flexGrow: 1 }} />
+
+            <Divider />
+
+            <List sx={{ p: 2 }}>
+                <ListItemButton sx={{ borderRadius: 2 }}>
+                    <ListItemText primary={'Settings'} />
+                </ListItemButton>
+
+                <ListItemButton sx={{ borderRadius: 2 }}>
+                    <ListItemText primary={"Support"} />
+                </ListItemButton>
+            </List>
+        </Box>
+    );
 
     return (
         <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f8fafc" }}>
-            {/* Sidebar */}
+            {/* Sidebar for Mobile */}
+            <Drawer
+                variant="temporary"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{
+                    keepMounted: true, // Better open performance on mobile.
+                }}
+                sx={{
+                    display: { xs: "block", md: "none" },
+                    "& .MuiDrawer-paper": {
+                        width: drawerWidth,
+                        boxSizing: "border-box",
+                        borderRight: "1px solid #e5e7eb",
+                        bgcolor: "#fff",
+                    },
+                }}
+            >
+                {drawerContent}
+            </Drawer>
+
+            {/* Sidebar for Desktop */}
             <Drawer
                 variant="permanent"
                 sx={{
+                    display: { xs: "none", md: "block" },
                     width: drawerWidth,
                     flexShrink: 0,
                     "& .MuiDrawer-paper": {
@@ -86,65 +194,11 @@ export default function AppShell({ children,   sidebarItems = [], breadcrumbs = 
                     },
                 }}
             >
-                <Box sx={{ p: 3 }}>
-                    <Logo />
-                </Box>
-
-                <List sx={{ px: 2 }}>
-                    {sidebarItems.map((item) => (
-                        <ListItemButton
-                            key={item.id}
-                            selected={selectedItem === item.id}
-                            onClick={() => setSelectedItem(item.id)}
-                            sx={{
-                                mb: 1,
-                                borderRadius: 2,
-                                minHeight: 48,
-
-                                "&.Mui-selected": {
-                                    bgcolor: "#1a237e",
-                                    color: "#fff",
-                                },
-
-                                "&.Mui-selected .MuiListItemIcon-root": {
-                                    color: "#fff",
-                                },
-                            }}
-                        >
-                            <ListItemIcon
-                                sx={{
-                                    minWidth: 36,
-                                    color:
-                                        selectedItem === item.id
-                                            ? "#fff"
-                                            : "text.secondary",
-                                }}
-                            >
-                                {item.icon}
-                            </ListItemIcon>
-
-                            <ListItemText primary={item.label} />
-                        </ListItemButton>
-                    ))}
-                </List>
-
-                <Box sx={{ flexGrow: 1 }} />
-
-                <Divider />
-
-                <List sx={{ p: 2 }}>
-                    <ListItemButton sx={{ borderRadius: 2 }}>
-                        <ListItemText primary={'Settings'} />
-                    </ListItemButton>
-
-                    <ListItemButton sx={{ borderRadius: 2 }}>
-                        <ListItemText primary={"Support"} />
-                    </ListItemButton>
-                </List>
+                {drawerContent}
             </Drawer>
 
             {/* Main Area */}
-            <Box sx={{ flexGrow: 1 }}>
+            <Box sx={{ flexGrow: 1, width: "100%", overflowX: "hidden" }}>
                 <AppBar
                     position="static"
                     elevation={0}
@@ -158,34 +212,57 @@ export default function AppShell({ children,   sidebarItems = [], breadcrumbs = 
                         sx={{
                             display: "flex",
                             justifyContent: "space-between",
+                            px: { xs: 1.5, sm: 2 },
                         }}
                     >
-                        {/* Breadcrumbs */}
-                        <Breadcrumbs>
-                            {breadcrumbs.map((item, index) => (
-                                <Link
-                                    key={index}
-                                    underline="hover"
-                                    color={
-                                        index === breadcrumbs.length - 1
-                                            ? "text.primary"
-                                            : "inherit"
-                                    }
-                                >
-                                    {item}
-                                </Link>
-                            ))}
-                        </Breadcrumbs>
+                        {/* Left Side: Mobile Hamburger Menu & Breadcrumbs/Title */}
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <IconButton
+                                color="inherit"
+                                aria-label="open drawer"
+                                edge="start"
+                                onClick={handleDrawerToggle}
+                                sx={{ mr: 1, display: { md: "none" } }}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+
+                            {/* Breadcrumbs for larger screens */}
+                            <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                                <Breadcrumbs>
+                                    {breadcrumbs.map((item, index) => (
+                                        <Link
+                                            key={index}
+                                            underline="hover"
+                                            color={
+                                                index === breadcrumbs.length - 1
+                                                    ? "text.primary"
+                                                    : "inherit"
+                                            }
+                                        >
+                                            {item}
+                                        </Link>
+                                    ))}
+                                </Breadcrumbs>
+                            </Box>
+
+                            {/* Simple Title for mobile screens */}
+                            <Box sx={{ display: { xs: "flex", sm: "none" }, alignItems: "center" }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#1a237e" }}>
+                                    Sales Coach
+                                </Typography>
+                            </Box>
+                        </Box>
 
                         {/* Right Side */}
                         <Box
                             sx={{
                                 display: "flex",
                                 alignItems: "center",
-                                gap: 2,
+                                gap: { xs: 1, sm: 2 },
                             }}
                         >
-                            <IconButton>
+                            <IconButton size="small">
                                 <NotificationsNoneOutlinedIcon />
                             </IconButton>
 
@@ -194,7 +271,8 @@ export default function AppShell({ children,   sidebarItems = [], breadcrumbs = 
                                     value={language}
                                     onChange={(e) => setLanguage(e.target.value)}
                                     sx={{
-                                        minWidth: 130,
+                                        minWidth: { xs: 80, sm: 120 },
+                                        fontSize: "12px",
                                     }}
                                 >
                                     <MenuItem value="en">English</MenuItem>
@@ -206,18 +284,18 @@ export default function AppShell({ children,   sidebarItems = [], breadcrumbs = 
                             <Divider
                                 orientation="vertical"
                                 flexItem
-                                sx={{ height: 30 }}
+                                sx={{ height: 24, alignSelf: "center", display: { xs: "none", sm: "block" } }}
                             />
 
                             <Avatar
                                 src="https://i.pravatar.cc/100"
-                                sx={{ width: 36, height: 36 }}
+                                sx={{ width: 32, height: 32 }}
                             />
                         </Box>
                     </Toolbar>
                 </AppBar>
 
-                <Box sx={{ p: 3 }}>{children}</Box>
+                <Box sx={{ p: { xs: 2, md: 3 } }}>{children}</Box>
             </Box>
         </Box>
     );
